@@ -27,6 +27,7 @@ class MyCarousel extends React.Component {
         arrows
         slidesPerScroll={2}
         slidesPerPage={2}
+        lazyLoadAmount={0}
         infinite
         breakpoints={{
           415: {

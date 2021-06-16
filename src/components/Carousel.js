@@ -37,6 +37,7 @@ class Carousel extends Component {
     infinite: PropTypes.bool,
     rtl: PropTypes.bool,
     lazyLoad: PropTypes.bool,
+    lazyLoadAmount: PropTypes.number,
     lazyLoader: PropTypes.node,
     draggable: PropTypes.bool,
     keepDirectionWhenDragging: PropTypes.bool,
@@ -66,6 +67,7 @@ class Carousel extends Component {
       rtl: PropTypes.bool,
       lazyLoad: PropTypes.bool,
       lazyLoader: PropTypes.node,
+      lazyLoadAmount: PropTypes.number,
     })),
   };
   static defaultProps = {
@@ -218,9 +220,16 @@ class Carousel extends Component {
     const slidesPerScroll = this.getProp('slidesPerScroll');
     const slidesPerPage = this.getProp('slidesPerPage');
     const infinite = this.getProp('infinite');
+    const lazyLoadAmount = this.getProp('lazyLoadAmount');
 
-    const prevStep = currentSlideIndex - slidesPerScroll;
-    const nextStep = currentSlideIndex + (slidesPerPage - 1) + slidesPerScroll;
+    // Default value for 'lazyLoadAmount' is 'slidesPerScroll'
+    let lazyAmount = slidesPerScroll;
+    if (typeof lazyLoadAmount !== 'undefined') {
+      lazyAmount = lazyLoadAmount;
+    }
+
+    const prevStep = currentSlideIndex - lazyAmount;
+    const nextStep = currentSlideIndex + (slidesPerPage - 1) + lazyAmount;
 
     let hooped = false;
     let prevIndex = this.clamp(prevStep);

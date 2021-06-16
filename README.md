@@ -184,6 +184,7 @@ You can access a clickable demo with many examples and a [live code editor](http
 | [**slidesPerPage**](https://beghp.github.io/gh-pages-rc-v1/docs/examples/multipleItems) | *Number* | `1` | Number of slides visible at once |
 | [**slidesPerScroll**](https://beghp.github.io/gh-pages-rc-v1/docs/examples/slidesPerScroll) | *Number* | `1` | Number by which value will change on scroll (autoPlay, arrow click, drag)|
 | [**lazyLoad**](https://beghp.github.io/gh-pages-rc-v1/docs/examples/lazyload) | *Boolean* | `false` | Initially, it loads only the closest next / previous slide to the current one based on the value of the slidesPerPage variable. Other slides are loaded as needed. |
+| [**lazyLoadAmount**] | *Number* | `undefined` | To be used instead of the default value |
 | **lazyLoader** | *React node* | `undefined` | To be used instead of the default loader |
 | **stopAutoPlayOnHover** | *Boolean* | `undefined` | Determines if autoPlay should stop when mouse hover over carousel |
 | [**value**](https://beghp.github.io/gh-pages-rc-v1/docs/examples/controlled) | *Number* | `undefined` | Current slide's index (zero based, depends on the elements order) |
