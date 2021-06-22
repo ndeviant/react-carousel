@@ -37,8 +37,8 @@ class Carousel extends Component {
     infinite: PropTypes.bool,
     rtl: PropTypes.bool,
     lazyLoad: PropTypes.bool,
-    lazyLoadAmount: PropTypes.number,
     lazyLoader: PropTypes.node,
+    lazyLoadClosestDelay: PropTypes.number,
     draggable: PropTypes.bool,
     keepDirectionWhenDragging: PropTypes.bool,
     animationSpeed: PropTypes.number,
@@ -67,7 +67,7 @@ class Carousel extends Component {
       rtl: PropTypes.bool,
       lazyLoad: PropTypes.bool,
       lazyLoader: PropTypes.node,
-      lazyLoadAmount: PropTypes.number,
+      lazyLoadClosestDelay: PropTypes.number,
     })),
   };
   static defaultProps = {
@@ -78,6 +78,7 @@ class Carousel extends Component {
     draggable: true,
     rtl: false,
     lazyLoad: false,
+    lazyLoadClosestDelay: config.lazyLoadClosestDelay,
     minDraggableOffset: 10,
   };
 
@@ -86,6 +87,7 @@ class Carousel extends Component {
     this.state = {
       carouselWidth: 0,
       windowWidth: 0,
+      lazyLoadClosest: !props.lazyLoadClosestDelay,
       clicked: null,
       dragOffset: 0,
       dragStart: null,
@@ -113,6 +115,22 @@ class Carousel extends Component {
 
     this.onResize(() => {
       this.setLazyLoadedSlides();
+    });
+
+    this.onWindowLoad(() => {
+      const { lazyLoadClosestDelay } = this.props;
+
+      if (!lazyLoadClosestDelay) {
+        return;
+      }
+
+      setTimeout(() => {
+        this.setState({
+          lazyLoadClosest: true,
+        }, () => {
+          this.setLazyLoadedSlides();
+        });
+      }, lazyLoadClosestDelay);
     });
 
     // setting autoplay interval
@@ -220,16 +238,17 @@ class Carousel extends Component {
     const slidesPerScroll = this.getProp('slidesPerScroll');
     const slidesPerPage = this.getProp('slidesPerPage');
     const infinite = this.getProp('infinite');
-    const lazyLoadAmount = this.getProp('lazyLoadAmount');
+
+    const { lazyLoadClosest } = this.state;
 
     // Default value for 'lazyLoadAmount' is 'slidesPerScroll'
-    let lazyAmount = slidesPerScroll;
-    if (typeof lazyLoadAmount !== 'undefined') {
-      lazyAmount = lazyLoadAmount;
+    let lazyLoadAmount = slidesPerScroll;
+    if (!lazyLoadClosest) {
+      lazyLoadAmount = 0;
     }
 
-    const prevStep = currentSlideIndex - lazyAmount;
-    const nextStep = currentSlideIndex + (slidesPerPage - 1) + lazyAmount;
+    const prevStep = currentSlideIndex - lazyLoadAmount;
+    const nextStep = currentSlideIndex + (slidesPerPage - 1) + lazyLoadAmount;
 
     let hooped = false;
     let prevIndex = this.clamp(prevStep);
@@ -375,6 +394,19 @@ class Carousel extends Component {
       windowWidth: window.innerWidth,
     }), callback);
   }, config.resizeEventListenerThrottle);
+
+  /**
+   * Handler setting the carouselWidth value in state (used to set proper width of track and slides)
+   * throttled to improve performance
+   * @param {function} cb
+   */
+  onWindowLoad = cb => {
+    if (document.readyState === 'complete') {
+      cb();
+    } else {
+      window.addEventListener('load', cb);
+    }
+  };
 
   /**
    * Function handling beginning of mouse drag by setting index of clicked item and coordinates of click in the state

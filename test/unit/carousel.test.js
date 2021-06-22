@@ -51,7 +51,7 @@ describe('Carousel', () => {
     });
 
     it('renders carousel items when slides are result of a function', () => {
-      const renderName = name => <div> {name} </div>;
+      const renderName = name => <div key={name}> {name} </div>;
 
       const names = ['Dave', 'Kanye', 'Adam'];
 
@@ -342,6 +342,7 @@ describe('Carousel', () => {
     it('lazy loads in simple mode', () => {
       const wrapper = setup({
         lazyLoad: true,
+        lazyLoadClosestDelay: null,
       });
 
       expect(wrapper.find('.BrainhubCarousel__loader')).toHaveLength(1);
@@ -352,6 +353,7 @@ describe('Carousel', () => {
         <Carousel
           lazyLoad
           infinite
+          lazyLoadClosestDelay={null}
         >
           <div/>
           <div/>
@@ -368,6 +370,7 @@ describe('Carousel', () => {
         <Carousel
           lazyLoad
           slidesPerScroll={2}
+          lazyLoadClosestDelay={null}
         >
           <div/>
           <div/>
@@ -386,6 +389,7 @@ describe('Carousel', () => {
         <Carousel
           lazyLoad
           slidesPerPage={2}
+          lazyLoadClosestDelay={null}
         >
           <div/>
           <div/>
@@ -399,32 +403,29 @@ describe('Carousel', () => {
       expect(wrapper.find('.BrainhubCarousel__loader')).toHaveLength(3);
     });
 
-    it('correctly lazy loads slides if `lazyLoadAmount` is set', () => {
+    it('custom lazy loader element', () => {
+      const wrapper = setup({
+        lazyLoad: true,
+        lazyLoader: <div className="custom-loader" />,
+        lazyLoadClosestDelay: null,
+      });
+
+      expect(wrapper.find('.custom-loader')).toHaveLength(1);
+    });
+
+
+    it('correctly lazy loads slides if `lazyLoadClosestDelay` is default value (2000)', () => {
       const wrapper = mount(
         <Carousel
           lazyLoad
-          slidesPerPage={2}
-          lazyLoadAmount={0}
         >
-          <div/>
-          <div/>
-          <div/>
           <div/>
           <div/>
           <div/>
         </Carousel>,
       );
 
-      expect(wrapper.find('.BrainhubCarousel__loader')).toHaveLength(4);
-    });
-
-    it('custom lazy loader element', () => {
-      const wrapper = setup({
-        lazyLoad: true,
-        lazyLoader: <div className="custom-loader" />,
-      });
-
-      expect(wrapper.find('.custom-loader')).toHaveLength(1);
+      expect(wrapper.find('.BrainhubCarousel__loader')).toHaveLength(2);
     });
   });
 });
