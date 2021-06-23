@@ -342,7 +342,7 @@ describe('Carousel', () => {
     it('lazy loads in simple mode', () => {
       const wrapper = setup({
         lazyLoad: true,
-        lazyLoadClosestDelay: null,
+        lazyLoadClosestOnInteraction: false,
       });
 
       expect(wrapper.find('.BrainhubCarousel__loader')).toHaveLength(1);
@@ -353,7 +353,7 @@ describe('Carousel', () => {
         <Carousel
           lazyLoad
           infinite
-          lazyLoadClosestDelay={null}
+          lazyLoadClosestOnInteraction={false}
         >
           <div/>
           <div/>
@@ -370,7 +370,7 @@ describe('Carousel', () => {
         <Carousel
           lazyLoad
           slidesPerScroll={2}
-          lazyLoadClosestDelay={null}
+          lazyLoadClosestOnInteraction={false}
         >
           <div/>
           <div/>
@@ -389,7 +389,7 @@ describe('Carousel', () => {
         <Carousel
           lazyLoad
           slidesPerPage={2}
-          lazyLoadClosestDelay={null}
+          lazyLoadClosestOnInteraction={false}
         >
           <div/>
           <div/>
@@ -407,14 +407,14 @@ describe('Carousel', () => {
       const wrapper = setup({
         lazyLoad: true,
         lazyLoader: <div className="custom-loader" />,
-        lazyLoadClosestDelay: null,
+        lazyLoadClosestOnInteraction: false,
       });
 
       expect(wrapper.find('.custom-loader')).toHaveLength(1);
     });
 
 
-    it('correctly lazy loads slides if `lazyLoadClosestDelay` is default value (2000)', () => {
+    it('correctly lazy loads slides if `lazyLoadClosestOnInteraction` is true', () => {
       const wrapper = mount(
         <Carousel
           lazyLoad

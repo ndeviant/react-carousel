@@ -38,7 +38,7 @@ class Carousel extends Component {
     rtl: PropTypes.bool,
     lazyLoad: PropTypes.bool,
     lazyLoader: PropTypes.node,
-    lazyLoadClosestDelay: PropTypes.number,
+    lazyLoadClosestOnInteraction: PropTypes.bool,
     draggable: PropTypes.bool,
     keepDirectionWhenDragging: PropTypes.bool,
     animationSpeed: PropTypes.number,
@@ -67,7 +67,6 @@ class Carousel extends Component {
       rtl: PropTypes.bool,
       lazyLoad: PropTypes.bool,
       lazyLoader: PropTypes.node,
-      lazyLoadClosestDelay: PropTypes.number,
     })),
   };
   static defaultProps = {
@@ -78,7 +77,7 @@ class Carousel extends Component {
     draggable: true,
     rtl: false,
     lazyLoad: false,
-    lazyLoadClosestDelay: config.lazyLoadClosestDelay,
+    lazyLoadClosestOnInteraction: true,
     minDraggableOffset: 10,
   };
 
@@ -87,8 +86,8 @@ class Carousel extends Component {
     this.state = {
       carouselWidth: 0,
       windowWidth: 0,
-      lazyLoadClosest: !props.lazyLoadClosestDelay,
       clicked: null,
+      interacted: false,
       dragOffset: 0,
       dragStart: null,
       transitionEnabled: false,
@@ -117,22 +116,6 @@ class Carousel extends Component {
       this.setLazyLoadedSlides();
     });
 
-    this.onWindowLoad(() => {
-      const { lazyLoadClosestDelay } = this.props;
-
-      if (!lazyLoadClosestDelay) {
-        return;
-      }
-
-      setTimeout(() => {
-        this.setState({
-          lazyLoadClosest: true,
-        }, () => {
-          this.setLazyLoadedSlides();
-        });
-      }, lazyLoadClosestDelay);
-    });
-
     // setting autoplay interval
     this.resetInterval();
 
@@ -155,7 +138,17 @@ class Carousel extends Component {
       });
     }
 
-    if (this.getProp('lazyLoad') && (windowWidthChanged || valueChanged)) {
+    /**
+     * Lazy load new slides, when:
+     * window resized
+     * slide changed
+     * was iteraction
+     */
+    if (this.getProp('lazyLoad') && (
+      windowWidthChanged
+      || valueChanged
+      || (prevState.interacted === false && this.state.interacted === true)
+    )) {
       this.setLazyLoadedSlides();
     }
   }
@@ -238,12 +231,13 @@ class Carousel extends Component {
     const slidesPerScroll = this.getProp('slidesPerScroll');
     const slidesPerPage = this.getProp('slidesPerPage');
     const infinite = this.getProp('infinite');
+    const lazyLoadClosestOnInteraction = this.getProp('lazyLoadClosestOnInteraction');
 
-    const { lazyLoadClosest } = this.state;
+    const { interacted } = this.state;
 
     // Default value for 'lazyLoadAmount' is 'slidesPerScroll'
     let lazyLoadAmount = slidesPerScroll;
-    if (!lazyLoadClosest) {
+    if (!interacted && lazyLoadClosestOnInteraction) {
       lazyLoadAmount = 0;
     }
 
@@ -396,19 +390,6 @@ class Carousel extends Component {
   }, config.resizeEventListenerThrottle);
 
   /**
-   * Handler setting the carouselWidth value in state (used to set proper width of track and slides)
-   * throttled to improve performance
-   * @param {function} cb
-   */
-  onWindowLoad = cb => {
-    if (document.readyState === 'complete') {
-      cb();
-    } else {
-      window.addEventListener('load', cb);
-    }
-  };
-
-  /**
    * Function handling beginning of mouse drag by setting index of clicked item and coordinates of click in the state
    * @param {event} e event
    * @param {number} index of the element drag started on
@@ -418,6 +399,7 @@ class Carousel extends Component {
     e.stopPropagation();
     const { pageX } = e;
     this.setState(() => ({
+      interacted: true,
       clicked: index,
       dragStart: pageX,
     }));
@@ -444,6 +426,7 @@ class Carousel extends Component {
   onTouchStart = (e, index) => {
     const { changedTouches } = e;
     this.setState(() => ({
+      interacted: true,
       clicked: index,
       dragStart: changedTouches[0].pageX,
     }));
@@ -492,8 +475,10 @@ class Carousel extends Component {
    * Stops auto play
    */
   onMouseEnter = () => {
+    console.log('onMouseEnter');
     this.setState(() => ({
       isAutoPlayStopped: true,
+      interacted: true,
     }));
   };
 
@@ -662,7 +647,8 @@ class Carousel extends Component {
 
     const isAutoPlay = this.getProp('autoPlay');
     const isStopAutoPlayOnHover = this.getProp('stopAutoPlayOnHover');
-    const handleAutoPlayEvent = action => (isAutoPlay && isStopAutoPlayOnHover) ? action : null;
+    const handleAutoPlayEvent = action => (isAutoPlay && isStopAutoPlayOnHover)
+    || this.state.interacted === false ? action : null;
 
     return (
       <div className="BrainhubCarousel__trackContainer">
